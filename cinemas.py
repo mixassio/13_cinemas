@@ -1,9 +1,7 @@
-import bs4
 import re
 import requests
-import lxml
-from kinopoisk.movie import Movie
-from urllib.parse import quote
+import bs4
+
 
 def fetch_afisha_list():
     films_html = requests.get('https://www.afisha.ru/msk/schedule_cinema/')
@@ -15,7 +13,6 @@ def fetch_afisha_list():
         year_film, count_cinema = get_count_schedule_film(id_film_afisha)
         list_films.append({'title': name_film, 'year': year_film, 'count_cinema': count_cinema})
     return list_films
-
 
 
 def get_count_schedule_film(id_film):
@@ -43,10 +40,9 @@ def fetch_idfilm_kp(title_film, year_film):
             return None
 
 
-
 def get_rating_kp(id_film_kp):
     if id_film_kp is None:
-        return 'error', 'error' #Not all movies are on kinopoisk
+        return '0', '0' #Not all movies are on kinopoisk
     url = 'http://www.kinopoisk.ru/rating/{}.xml'.format(id_film_kp)
     raw_xml = requests.get(url).content
     soup = bs4.BeautifulSoup(raw_xml, "lxml")
@@ -54,18 +50,23 @@ def get_rating_kp(id_film_kp):
     rating_kp = soup('kp_rating')[0].string
     return rating_kp, count_wiewer
 
-def output_movies_to_console(movies):
-    pass
+
+def get_list_10():
+    list_films = fetch_afisha_list()
+    set_delete = []
+    for id, film in enumerate(list_films):
+        id_film_kp = fetch_idfilm_kp(film['title'], film['year'])
+        rating_kp, count_wiewer = get_rating_kp(id_film_kp)
+        film['rating_kp'] = float(rating_kp)
+        if float(rating_kp) == 0.0:
+            set_delete.append(id)
+    set_delete.reverse()
+    for id in set_delete:
+        list_films.pop(id)
+    return list_films[:10]
 
 
 if __name__ == '__main__':
-    list_films = fetch_afisha_list()
-    for film in list_films:
-        id_film_kp = fetch_idfilm_kp(film['title'], film['year'])
-        rating_kp, count_wiewer = get_rating_kp(id_film_kp)
-        film['rating_kp'] = rating_kp
-        print(film)
-    #print(fetch_idfilm_kp('Манифесто', '2015'))
-    """id_film_kp = fetch_idfilm_kp(name_film, year_film)
-    rating_kp, count_wiewer = get_rating_kp(id_film_kp)
-    print(name_film, year_film, count_cinema, id_film_kp, rating_kp)"""
+    list_films = get_list_10()
+    for i in sorted(list_films, reverse=True, key=lambda k: (k['count_cinema'], k['rating_kp'])):
+        print(i)
