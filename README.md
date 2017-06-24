@@ -6,10 +6,10 @@ Data from afisha.ru and kinopoisk.ru are used
 To run the script requires an interpreter python 3
 
 Output data:
-title - name of film
-year - year of issue
-count_cinema - The number of cinemas in which the film is currently running
-rating_kp - Rating of the film from kinopoisk.ru
+- title - name of film
+- year - year of issue
+- count_cinema - The number of cinemas in which the film is currently running
+- rating_kp - Rating of the film from kinopoisk.ru
 
 ```#!bash
 
